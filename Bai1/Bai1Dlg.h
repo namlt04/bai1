@@ -4,7 +4,9 @@
 
 #pragma once
 
-
+#include <vector>
+#include "CInputDialog.h"
+#include "SqlConnector.h"
 // CBai1Dlg dialog
 class CBai1Dlg : public CDialogEx
 {
@@ -34,6 +36,8 @@ protected:
 	afx_msg void OnAddButtonClicked();
 	afx_msg void OnEditButtonClicked();
 	afx_msg void OnRemoveButtonClicked();
+
+	void getSelectedRecord(std::vector<int>& vt_Id, std::vector<int>& vt_Index);
 
 
 	CFont m_font;

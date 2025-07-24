@@ -1,4 +1,4 @@
-
+﻿
 // Bai1Dlg.cpp : implementation file
 //
 
@@ -7,12 +7,13 @@
 #include "Bai1.h"
 #include "Bai1Dlg.h"
 #include "afxdialogex.h"
-
+#include <mysql_connection.h>
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
 
+//#include <mysql_connection>
 // CAboutDlg dialog used for App About
 
 class CAboutDlg : public CDialogEx
@@ -67,8 +68,8 @@ BEGIN_MESSAGE_MAP(CBai1Dlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(1102,  &CBai1Dlg::OnAddButtonClicked)
 
-	ON_BN_CLICKED(1103,  &CBai1Dlg::OnAddButtonClicked)
-	ON_BN_CLICKED(1104,  &CBai1Dlg::OnAddButtonClicked)
+	ON_BN_CLICKED(1103,  &CBai1Dlg::OnEditButtonClicked)
+	ON_BN_CLICKED(1104,  &CBai1Dlg::OnRemoveButtonClicked)
 END_MESSAGE_MAP()
 
 
@@ -105,7 +106,7 @@ BOOL CBai1Dlg::OnInitDialog()
 
 	// TODO: Add extra initialization here
 	
-	this->SetWindowPos(NULL, 0, 0, 800, 600, SWP_NOMOVE | SWP_NOZORDER); 
+	this->SetWindowPos(NULL, 0, 0, 900, 600, SWP_NOMOVE | SWP_NOZORDER); 
 	
 	CRect rClient; 
 	GetClientRect(&rClient); 
@@ -131,41 +132,32 @@ BOOL CBai1Dlg::OnInitDialog()
 	m_listCtrl.SetFont(&m_font); 
 	m_listCtrl.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
-	m_listCtrl.InsertColumn(0, _T("ID"), LVCFMT_CENTER, 50); 
+	m_listCtrl.InsertColumn(0, _T("ID"), LVCFMT_CENTER, width / 9); 
 
-	m_listCtrl.InsertColumn(1, _T("Account"), LVCFMT_CENTER, 100); 
-	m_listCtrl.InsertColumn(2, _T("HoTen"), LVCFMT_CENTER, 100);
-	m_listCtrl.InsertColumn(3, _T("QueQuan"), LVCFMT_CENTER, 100);
-	m_listCtrl.InsertColumn(4, _T("NgaySinh"), LVCFMT_CENTER, 100);
-	m_listCtrl.InsertColumn(5, _T("NgaySinh"), LVCFMT_CENTER, 100);
-	m_listCtrl.InsertColumn(6, _T("GioiTinh"), LVCFMT_CENTER, 100);
-	m_listCtrl.InsertColumn(7, _T("TruongHoc"), LVCFMT_CENTER, 100);
-	m_listCtrl.InsertColumn(8, _T("SoDienThoai"), LVCFMT_CENTER, 100);
-
-
-	//listCtrl.InsertItem(_T(""), )
-	int row0 = m_listCtrl.InsertItem(0, _T("1"));
-
-	m_listCtrl.SetItemText(row0, 1, _T("Nam")); 
-	m_listCtrl.SetItemText(row0, 2, _T("19")); 
-
-int row1 = m_listCtrl.InsertItem(0, _T("2"));
-
-	m_listCtrl.SetItemText(row1, 1, _T("Nam")); 
-	m_listCtrl.SetItemText(row1, 2, _T("19")); 
-
-int row2 = m_listCtrl.InsertItem(0, _T("3"));
-
-	m_listCtrl.SetItemText(row2, 1, _T("Nam")); 
-	m_listCtrl.SetItemText(row2, 2, _T("19")); 
+	m_listCtrl.InsertColumn(1, _T("Account"), LVCFMT_CENTER, width / 9 ); 
+	m_listCtrl.InsertColumn(2, _T("HoTen"), LVCFMT_CENTER, width / 9 );
+	m_listCtrl.InsertColumn(3, _T("QueQuan"), LVCFMT_CENTER, width / 9 );
+	m_listCtrl.InsertColumn(4, _T("NgaySinh"), LVCFMT_CENTER, width / 9 );
+	m_listCtrl.InsertColumn(5, _T("GioiTinh"), LVCFMT_CENTER, width / 9);
+	m_listCtrl.InsertColumn(6, _T("TruongHoc"), LVCFMT_CENTER, width / 9 );
+	m_listCtrl.InsertColumn(7, _T("SoDienThoai"), LVCFMT_CENTER, width / 9 );
 
 
 	m_addButton.Create(_T("Them"), WS_CHILD | WS_VISIBLE, CRect(0, rClient.Height() - 100, rClient.Width() / 3, rClient.Height()), this, 1102); 
 	m_editButton.Create(_T("Sua"), WS_CHILD | WS_VISIBLE, CRect(rClient.Width() / 3, rClient.Height() - 100,2 * rClient.Width() / 3, rClient.Height()), this, 1103);
 	m_removeButton.Create(_T("Xoa"), WS_CHILD | WS_VISIBLE, CRect(2 * rClient.Width() / 3, rClient.Height() - 100, rClient.Width(), rClient.Height()), this, 1104);
-
+	std::vector<std::vector<CString>> vt = SqlConnector::getInstance()->getAllRecord(); 
+	for (std::vector<CString> tmp : vt)
+	{
+		int row = m_listCtrl.InsertItem(0, tmp[0]); 
+		for (int i = 0; i <= 7; i++)
+		{
+			m_listCtrl.SetItemText(row, i, tmp[i]); 
+		}
+	}
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
+
 
 void CBai1Dlg::OnSysCommand(UINT nID, LPARAM lParam)
 {
@@ -220,24 +212,85 @@ HCURSOR CBai1Dlg::OnQueryDragIcon()
 void CBai1Dlg::OnAddButtonClicked()
 {
 
-	//AfxMessageBox(_T("Da click vao Add"));
-	int row = m_listCtrl.InsertItem(0, _T("0x112"));
-	m_listCtrl.SetItemText(row, 1, _T("column_1"));
-	m_listCtrl.SetItemText(row, 2, _T("column_2"));
-	m_listCtrl.SetItemText(row, 3, _T("column_3"));
-	m_listCtrl.SetItemText(row, 4, _T("column_4"));
-	m_listCtrl.SetItemText(row, 5, _T("column_5"));
-	m_listCtrl.SetItemText(row, 6, _T("column_6"));
-	m_listCtrl.SetItemText(row, 7, _T("column_7"));
-	m_listCtrl.SetItemText(row, 8, _T("column_8"));
+	CInputDialog dlg; 
+	dlg.DoModal();
+
+	// Gọi Dialog Thêm
+	// Bỏ chọn tất cả các item đang chọn
 }
 void CBai1Dlg::OnEditButtonClicked()
 {
-	AfxMessageBox(_T("Da click vao Edit"));
+
+	std::vector<int> vt_Id; 
+	std::vector<int> vt_Index; 
+	getSelectedRecord(vt_Id, vt_Index); 
+	if (vt_Id.size() == 0 )
+	{
+		AfxMessageBox(_T("Bạn phải chọn 1 bản ghi để chỉnh sửa"));
+		return; 
+	} 
+	else if (vt_Id.size() > 1 )
+	{
+		AfxMessageBox(_T("Bạn không thể chọn nhiều hơn 1 bản ghi để chỉnh sửa"));
+		return;
+	}
+	else
+	{
+
+		CInputDialog dlg; 
+		dlg.DoModal(); 
+
+	}
+
 
 }
 void CBai1Dlg::OnRemoveButtonClicked()
 {
 
-	AfxMessageBox(_T("Da click vao Remove"));
+	std::vector<int> vt_Id; 
+	std::vector<int> vt_Index; 
+	// Kiểm tra số bản ghi được chọn, đưa vào vector<int> vt (id) 
+
+	
+	getSelectedRecord(vt_Id, vt_Index); 
+	CString noti; 
+	noti.Format(_T("Bạn có chắc chắn muốn xóa %d bản ghi"), vt_Id.size()); 
+	int result = AfxMessageBox(noti, MB_YESNO | MB_ICONQUESTION); 
+	if (result == IDYES)
+	{
+		// Gọi đến hàm xóa và truyền vào vt_id
+		// Xóa trên màn hình hiển thị 
+		for (int index : vt_Index)
+		{
+			m_listCtrl.DeleteItem(index);  // Xóa dòng Index
+		}
+
+		// Xóa trên database 
+		
+		SqlConnector::getInstance()->Remove(vt_Id); 
+		
+		CString noti;
+		noti.Format(_T("Xóa thành công %d bản ghi"), vt_Index.size());
+		AfxMessageBox(noti, MB_ICONINFORMATION);
+	}
+	else
+	{
+		// Bỏ qua 
+		// Hủy các dòng được chọn
+		for (int index : vt_Index)
+		{
+			m_listCtrl.SetItemState(index, 0, LVIS_SELECTED); 
+		}
+	}
+
+}
+void CBai1Dlg::getSelectedRecord(std::vector<int>& vt_Id, std::vector<int>& vt_Index)
+{
+	int nIndex = -1; 
+	while ((nIndex = m_listCtrl.GetNextItem(nIndex, LVNI_SELECTED)) != -1)
+	{
+		int nId = _ttoi(m_listCtrl.GetItemText(nIndex, 0));  // Lay cot 0
+		vt_Id.push_back(nId); 
+		vt_Index.push_back(nIndex); 
+	}
 }

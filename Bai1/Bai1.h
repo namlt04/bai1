@@ -9,7 +9,7 @@
 #endif
 
 #include "resource.h"		// main symbols
-
+#include "SqlConnector.h"
 
 // CBai1App:
 // See Bai1.cpp for the implementation of this class
