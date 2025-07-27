@@ -5,6 +5,7 @@
 #include "cppconn/resultset.h"
 #include <mutex>
 #include <vector>
+#include "Information.h"
 class SqlConnector
 {
 
@@ -21,10 +22,10 @@ private :
 public:
 	static SqlConnector* getInstance();
 	sql::Connection* getConnection(); 
-	int Add(std::string Account, std::string HoTen, std::string QueQuan, std::string NgaySinh, int GioiTinh, std::string TruongHoc, std::string SoDienThoai);
-	int Edit(std::string ID, std::string Account, std::string HoTen, std::string QueQuan, std::string NgaySinh, int GioiTinh, std::string TruongHoc, std::string SoDienThoai);
+	int Edit(std::vector<std::string>& vt_Info);
 	BOOL Remove(std::vector<int> vt_Id); 
 	~SqlConnector(); 
-	std::vector<std::vector<CString>> SqlConnector::getAllRecord(); 
+	std::vector<std::vector<std::string>> SqlConnector::getAllRecord(); 
+	std::vector<std::string> Add(std::vector<std::string>& vt_Info);
 };
 

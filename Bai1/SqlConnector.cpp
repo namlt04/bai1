@@ -59,62 +59,72 @@ sql::Connection* SqlConnector::getConnection()
 {
 	return conn; 
 }
-
-std::vector<std::vector<CString>> SqlConnector::getAllRecord()
+std::vector<std::vector<std::string>> SqlConnector::getAllRecord()
 {
-	std::vector<std::vector<CString>> vt;
-	pstm =	conn->prepareStatement("Select * from tb_NhanVien ORDER BY ID DESC;");
-	res = 	pstm->executeQuery(); 
+	std::vector < std::vector<std::string>> vt;
+	pstm = conn->prepareStatement("Select * from tb_NhanVien ORDER BY ID DESC;");
+	res = pstm->executeQuery(); 
 	while (res->next())
 	{
-		std::vector<CString> tmp;
+		std::vector<std::string> tmp;
 		for (int i = 1; i <= 8; i++)
 		{
 			std::string text = res->getString(i); 
-
-			CString conv = CA2T(text.c_str(), CP_UTF8);
-			tmp.push_back(conv); 
-
+			tmp.push_back(text);
 		}
 		vt.push_back(tmp); 
 		
 	}
-	CString noti; 
-	//noti.Format(_T("%d"), vt.size()); 
-	AfxMessageBox(noti); 
 	return vt;
 }
-int SqlConnector::Add(std::string Account, std::string HoTen, std::string QueQuan, std::string NgaySinh, int GioiTinh, std::string TruongHoc, std::string SoDienThoai)
+std::vector<std::string> SqlConnector::Add(std::vector<std::string>& vt_Info)
 {
-	std::string name = "hehe"; 
-	
+	// Thêm vào trong database	
 	std::string query = "insert into tb_NhanVien(Account,HoTen,QueQuan,NgaySinh,GioiTinh,TruongHoc,SoDienThoai) values(?,?,?,?,?,?,?)"; 
 	pstm = conn->prepareStatement(query);
-	pstm->setString(1, Account); 
-	pstm->setString(2, HoTen);
-	pstm->setString(3, QueQuan);
-	pstm->setDateTime(4, NgaySinh);
-	pstm->setInt(5, GioiTinh); 
+ 
+	for (int i = 1; i <= 7; i++)
+	{
+		if (i == 4)
+			pstm->setDateTime(i, vt_Info[i - 1]);
+		else if (i == 5)
+			pstm->setInt(5, std::stoi(vt_Info[i - 1]));
 
-	pstm->setString(6, TruongHoc); 
-	pstm->setString(7, SoDienThoai); 
-	return pstm->executeUpdate(); 
+		else
+			pstm->setString(i, vt_Info[i - 1]);
+	}
+	pstm->executeUpdate(); 
+
+	// Lấy ID của record vừa thêm vào
+	std::string queryId = "select last_insert_id();";
+	pstm = conn->prepareStatement(queryId); 
+	res = pstm->executeQuery(); 
+	res->next(); 
+
+	// Trả về 1 vector
+	vt_Info.insert(vt_Info.begin(), res->getString(1)); 
+	return vt_Info;
 
 }
-int SqlConnector::Edit(std::string ID, std::string Account, std::string HoTen, std::string QueQuan, std::string NgaySinh, int GioiTinh, std::string TruongHoc, std::string SoDienThoai)
+int SqlConnector::Edit(std::vector<std::string>& vt_Info)
 {
 	std::string query = "update tb_NhanVien set Account = ?, HoTen = ?, QueQuan = ?, NgaySinh = ?, GioiTinh = ?, TruongHoc = ?, SoDienThoai = ?  where ID = ?"; 
 
 	pstm = conn->prepareStatement(query);
-	pstm->setString(1, Account);
-	pstm->setString(2, HoTen);
-	pstm->setString(3, QueQuan);
-	pstm->setDateTime(4, NgaySinh);
-	pstm->setInt(5, GioiTinh);
-
-	pstm->setString(6, TruongHoc);
-	pstm->setString(7, SoDienThoai);
-	pstm->setString(8, ID);
+	
+	// vector gửi về bao gồm cả trường ID, do đó bắt đầu từ 1
+	for (int i = 0; i <= 7; i++)
+	{
+		if (i == 0)
+			pstm->setInt(i + 1, std::stoi(vt_Info[i])); 
+		else if (i == 4)
+			pstm->setDateTime(i + 1, vt_Info[i]);
+		else if (i == 5)
+			pstm->setInt(i + 1, std::stoi(vt_Info[i]));
+		else
+			pstm->setString(i + 1, vt_Info[i]);
+	}
+	pstm->executeUpdate();
 	return pstm->executeUpdate();
 	
 }

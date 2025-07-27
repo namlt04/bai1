@@ -146,18 +146,22 @@ BOOL CBai1Dlg::OnInitDialog()
 	m_addButton.Create(_T("Them"), WS_CHILD | WS_VISIBLE, CRect(0, rClient.Height() - 100, rClient.Width() / 3, rClient.Height()), this, 1102); 
 	m_editButton.Create(_T("Sua"), WS_CHILD | WS_VISIBLE, CRect(rClient.Width() / 3, rClient.Height() - 100,2 * rClient.Width() / 3, rClient.Height()), this, 1103);
 	m_removeButton.Create(_T("Xoa"), WS_CHILD | WS_VISIBLE, CRect(2 * rClient.Width() / 3, rClient.Height() - 100, rClient.Width(), rClient.Height()), this, 1104);
-	std::vector<std::vector<CString>> vt = SqlConnector::getInstance()->getAllRecord(); 
-	for (std::vector<CString> tmp : vt)
+	std::vector<std::vector<std::string>> vt = SqlConnector::getInstance()->getAllRecord(); 
+	for (std::vector<std::string> tmp : vt)
 	{
-		int row = m_listCtrl.InsertItem(0, tmp[0]); 
-		for (int i = 0; i <= 7; i++)
-		{
-			m_listCtrl.SetItemText(row, i, tmp[i]); 
-		}
+		InsertRow(tmp); 
 	}
-	return TRUE;  // return TRUE  unless you set the focus to a control
+	return TRUE;  
 }
 
+void CBai1Dlg::InsertRow(std::vector<std::string>& tmp)
+{
+	int row = m_listCtrl.InsertItem(0, CA2T(tmp[0].c_str(), CP_UTF8)); 
+	for (int i = 0; i <= 7; i++)
+	{
+		m_listCtrl.SetItemText(row, i, CA2T(tmp[i].c_str(), CP_UTF8)); 
+	}
+}
 
 void CBai1Dlg::OnSysCommand(UINT nID, LPARAM lParam)
 {
@@ -165,6 +169,7 @@ void CBai1Dlg::OnSysCommand(UINT nID, LPARAM lParam)
 	{
 		CAboutDlg dlgAbout;
 		dlgAbout.DoModal();
+
 	}
 	else
 	{
@@ -213,7 +218,17 @@ void CBai1Dlg::OnAddButtonClicked()
 {
 
 	CInputDialog dlg; 
-	dlg.DoModal();
+
+	if (dlg.DoModal() == IDOK)
+	{
+		std::vector<std::string> vt_strReceiver = dlg.GetInformation(); 
+		// Them vào trong database
+		vt_strReceiver = SqlConnector::getInstance()->Add(vt_strReceiver); 
+		// Thêm vào màn hình
+		InsertRow(vt_strReceiver); 
+
+		AfxMessageBox(_T("Thêm bản ghi mới thành công") , MB_ICONINFORMATION); 
+	}
 
 	// Gọi Dialog Thêm
 	// Bỏ chọn tất cả các item đang chọn
@@ -236,9 +251,36 @@ void CBai1Dlg::OnEditButtonClicked()
 	}
 	else
 	{
-
+		
 		CInputDialog dlg; 
-		dlg.DoModal(); 
+		// Khởi tạo dữ liệu
+		std::vector<CString> vt_Cstr;
+		for (int i = 0; i < 8; i++)
+		{
+			vt_Cstr.push_back(m_listCtrl.GetItemText(vt_Index[0], i));  // (row, column)
+		}
+		dlg.SetInformation(vt_Cstr); 
+
+		if (dlg.DoModal() == IDOK)
+		{
+			// Lấy dữ liệu đã sửa xong từ dialog
+			std::vector<std::string> vt_strReceiver = dlg.GetInformation();
+
+			// Sừa trong database
+			SqlConnector::getInstance()->Edit(vt_strReceiver);
+
+			// Sửa trên màn hình
+
+			int row = vt_Index[0]; // [0] vì chỉ có duy nhất 1 phần tử
+			
+			// ID không đổi 
+			for (int i = 1; i <= 7; i++)
+			{
+				m_listCtrl.SetItemText(row, i, CA2T(vt_strReceiver[i].c_str(), CP_UTF8));
+			}
+			AfxMessageBox(_T("Chỉnh sửa bản ghi thành công"), MB_ICONINFORMATION);
+
+		}
 
 	}
 

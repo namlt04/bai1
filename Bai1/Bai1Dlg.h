@@ -37,8 +37,9 @@ protected:
 	afx_msg void OnEditButtonClicked();
 	afx_msg void OnRemoveButtonClicked();
 
+	// helper function
 	void getSelectedRecord(std::vector<int>& vt_Id, std::vector<int>& vt_Index);
-
+	void InsertRow(std::vector <std::string> & tmp);
 
 	CFont m_font;
 
